@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Tanishqa — Notes to self</title>
+<meta name="description" content="Personal notes, from Tanishqa." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FAF6F0;
+    --paper-alt: #F1EAE0;
+    --ink: #2A2420;
+    --ink-soft: #6B6156;
+    --ink-faint: #9A9083;
+    --brass: #A9825A;
+    --brass-deep: #8C6B47;
+    --plum: #6E4B56;
+    --line: #E3D8C8;
+    --serif: 'Fraunces', serif;
+    --sans: 'Inter', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --rail-w: 240px;
+    --measure: 640px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+  ::selection{ background:var(--brass); color:var(--paper); }
+  h1,h2,h3{ font-family:var(--serif); font-weight:500; margin:0; letter-spacing:-0.01em; }
+
+  /* pinned tag — the note-app "label" motif, replaces the old eyebrow */
+  .tag{
+    font-family:var(--mono);
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    color:var(--brass-deep);
+    display:inline-block;
+    background:var(--paper-alt);
+    border:1px solid var(--line);
+    padding:0.28rem 0.7rem;
+    border-radius:2px;
+    box-shadow:0 1px 2px rgba(42,36,32,0.05);
+    margin-bottom:1.1rem;
+  }
+  section:nth-of-type(odd) .tag{ transform:rotate(-1.1deg); }
+  section:nth-of-type(even) .tag{ transform:rotate(0.9deg); }
+
+  /* ---------- layout shell ---------- */
+  .shell{ display:flex; min-height:100vh; }
+
+  .rail{
+    position:fixed; top:0; left:0; bottom:0;
+    width:var(--rail-w);
+    padding:2.75rem 1.75rem 2rem;
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column; gap:1.9rem;
+    overflow-y:auto; z-index:50;
+  }
+  .rail-mark{ font-family:var(--serif); font-style:italic; font-size:1.5rem; margin-bottom:0.25rem; }
+  .rail-sub{ font-family:var(--mono); font-size:0.68rem; color:var(--ink-faint); letter-spacing:0.08em; margin-top:-1.5rem; }
+  .rail-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+  .rail-list li{ border-bottom:1px solid transparent; }
+  .rail-link{
+    display:flex; flex-direction:column; gap:0.15rem;
+    padding:0.58rem 0; text-decoration:none;
+    border-left:2px solid transparent; padding-left:0.85rem; margin-left:-0.85rem;
+    transition:border-color .25s ease, opacity .25s ease; opacity:0.6;
+  }
+  .rail-link .n-title{ font-family:var(--serif); font-size:0.95rem; color:var(--ink); }
+  .rail-link .n-time{ font-family:var(--mono); font-size:0.64rem; color:var(--ink-faint); letter-spacing:.03em; }
+  .rail-link.active{ opacity:1; border-left-color:var(--brass); }
+  .rail-link:hover{ opacity:1; }
+
+  .rail-foot{ margin-top:auto; }
+  .rail-foot .tag{ margin-bottom:.6rem; }
+  .rail-socials{ display:flex; flex-direction:column; gap:.5rem; font-family:var(--mono); font-size:.72rem; }
+  .rail-socials a{ text-decoration:none; color:var(--ink-soft); border-bottom:1px solid var(--line); padding-bottom:1px; width:fit-content; }
+  .rail-socials a:hover{ color:var(--brass-deep); border-color:var(--brass); }
+
+  .topbar{ display:none; }
+  main{ margin-left:var(--rail-w); flex:1; min-width:0; }
+
+  section{
+    padding:7rem 8vw 2rem;
+    max-width:1100px;
+    border-bottom:1px solid var(--line);
+  }
+  section:last-of-type{ border-bottom:none; }
+  .section-inner{ max-width:var(--measure); }
+  .section-inner.wide{ max-width:880px; }
+
+  p{ margin:0 0 1.25rem; color:var(--ink); }
+  p.lede{ font-family:var(--serif); font-size:1.3rem; line-height:1.55; color:var(--ink); }
+  .soft{ color:var(--ink-soft); }
+  em{ font-style:italic; color:var(--brass-deep); }
+
+  h2.section-title{
+    font-size:clamp(1.9rem, 3vw, 2.7rem);
+    margin-bottom:2rem;
+    line-height:1.12;
+  }
+
+  blockquote{
+    font-family:var(--serif); font-style:italic;
+    font-size:1.4rem; line-height:1.55; color:var(--plum);
+    margin:2.2rem 0 2.2rem 0.2rem;
+    padding-left:1.3rem;
+    border-left:2px solid var(--brass);
+    transform:rotate(-0.25deg);
+  }
+
+  /* ---------- hero / portrait ---------- */
+  .hero{ padding-top:5.2rem; }
+  .hero-top{ display:flex; gap:2.4rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1.5rem; }
+  .portrait{
+    width:190px; flex:none;
+    aspect-ratio:4/5;
+    border-radius:2px;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 2px, transparent 2px 5px),
+      linear-gradient(155deg, #DCC7A8 0%, #C9A87B 38%, #B08D5F 68%, #8C6B47 100%);
+    position:relative;
+    transform:rotate(-1.6deg);
+    box-shadow:0 10px 24px rgba(42,36,32,0.14), 0 2px 6px rgba(42,36,32,0.08);
+  }
+  .portrait::after{
+    content:'Portrait — add photo';
+    position:absolute; left:0.9rem; bottom:0.9rem;
+    font-family:var(--mono); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase;
+    color:rgba(255,255,255,.92);
+  }
+  .hero-stage{ flex:1; min-width:260px; min-height:6.5rem; display:flex; align-items:flex-end; }
+  .hero-q{ font-family:var(--serif); font-style:italic; font-size:clamp(1.5rem, 3.2vw, 2.3rem); color:var(--ink-soft); }
+  .hero-q .cursor{ display:inline-block; width:2px; height:1em; background:var(--brass); margin-left:2px; vertical-align:-0.1em; animation:blink 1s steps(1) infinite; }
+  @keyframes blink{ 50%{ opacity:0; } }
+  .hero-a{
+    font-family:var(--serif); font-size:clamp(2.1rem, 4.6vw, 3.3rem); line-height:1.08;
+    opacity:0; transform:translateY(8px); transition:opacity .8s ease, transform .8s ease;
+  }
+  .hero-a.show{ opacity:1; transform:translateY(0); }
+  .hero-body{ margin-top:2rem; max-width:var(--measure); }
+
+  /* ---------- life / note grid ---------- */
+  .life-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 3rem; }
+  .life-item{ padding:1.8rem 0; border-bottom:1px solid var(--line); }
+  .life-item h3{ font-size:1.1rem; margin-bottom:.5rem; }
+  .life-item p{ font-size:.95rem; color:var(--ink-soft); margin-bottom:0; }
+  .life-item.curiosity{
+    grid-column:1/-1;
+    background:var(--paper-alt);
+    border:1px dashed var(--line);
+    border-radius:3px;
+    padding:1.6rem 1.7rem;
+    margin:.6rem 0 1rem;
+  }
+  .life-item.curiosity h3{ margin-bottom:.6rem; }
+  .life-item.curiosity p{ color:var(--ink); }
+
+  /* ---------- work entries ---------- */
+  .entry{ padding:1.9rem 0; border-bottom:1px solid var(--line); }
+  .entry:last-child{ border-bottom:none; }
+  .entry h3{ font-size:1.3rem; margin-bottom:.15rem; }
+  .entry-org{ font-family:var(--mono); font-size:.7rem; color:var(--brass-deep); letter-spacing:.04em; display:block; margin-bottom:.8rem; }
+
+  /* ---------- collections ---------- */
+  .coll-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:.5rem; }
+  .coll-card{ background:var(--paper); padding:1.5rem 1.3rem; min-height:100px; display:flex; flex-direction:column; justify-content:space-between; transition:background .2s ease; }
+  .coll-card:hover{ background:var(--paper-alt); }
+  .coll-card h4{ font-family:var(--serif); font-size:1.02rem; font-weight:500; margin:0 0 .3rem; }
+  .coll-card span{ font-family:var(--mono); font-size:.64rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.07em; }
+
+  /* ---------- thoughts / journal entries ---------- */
+  .thoughts-list{ margin-top:.5rem; }
+  .thought{ padding:1.9rem 0; border-bottom:1px solid var(--line); }
+  .thought:last-child{ border-bottom:none; }
+  .thought-date{
+    font-family:var(--mono); font-size:.68rem; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--brass-deep); display:block; margin-bottom:.6rem;
+  }
+  .thought h3{ font-size:1.25rem; margin-bottom:.6rem; }
+  .thought p{ color:var(--ink-soft); margin-bottom:0; }
+  .thought.placeholder{
+    border:1px dashed var(--line); border-bottom:1px dashed var(--line);
+    border-radius:3px; padding:1.8rem 1.7rem; background:var(--paper-alt);
+  }
+  .thought.placeholder .thought-date{ color:var(--ink-faint); }
+
+  /* ---------- now grid ---------- */
+  .now-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1.7rem 3rem; }
+  .now-item .tag{ margin-bottom:.5rem; }
+  .now-item .fill{ color:var(--ink-faint); font-style:italic; }
+  .now-item ul{ margin:0; padding-left:1.1rem; }
+  .now-item li{ margin-bottom:.3rem; }
+
+  /* ---------- say hi + message box ---------- */
+  .sayhi .lede{ font-size:1.5rem; }
+  .social-row{ display:flex; gap:2rem; flex-wrap:wrap; margin:1.8rem 0 2.6rem; }
+  .social-row a{
+    font-family:var(--mono); font-size:.84rem; text-decoration:none;
+    border-bottom:1px solid var(--line); padding-bottom:3px; color:var(--ink);
+    transition:color .2s ease, border-color .2s ease;
+  }
+  .social-row a:hover{ color:var(--brass-deep); border-color:var(--brass); }
+  .social-row .fill{ font-style:italic; color:var(--ink-faint); border-bottom:none; }
+
+  .msg-note{
+    background:var(--paper-alt);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:1.9rem 2rem 2.1rem;
+    max-width:560px;
+    transform:rotate(-0.3deg);
+  }
+  .msg-note label{ display:block; font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:.4rem; }
+  .msg-note input, .msg-note textarea{
+    width:100%; font-family:var(--sans); font-size:.95rem; color:var(--ink);
+    background:var(--paper); border:1px solid var(--line); border-radius:2px;
+    padding:.65rem .75rem; margin-bottom:1.1rem; resize:vertical;
+  }
+  .msg-note textarea{ min-height:110px; }
+  .msg-note input:focus, .msg-note textarea:focus{ outline:2px solid var(--brass); outline-offset:1px; }
+  .msg-note button{
+    font-family:var(--mono); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em;
+    background:var(--ink); color:var(--paper); border:none; border-radius:2px;
+    padding:.7rem 1.4rem; cursor:pointer; transition:background .2s ease;
+  }
+  .msg-note button:hover{ background:var(--brass-deep); }
+  .msg-hint{ font-family:var(--mono); font-size:.68rem; color:var(--ink-faint); margin-top:.9rem; margin-bottom:0; }
+
+  footer.foot{ padding:2.5rem 8vw 4rem; font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); max-width:1100px; }
+
+  @media (max-width: 900px){
+    .rail{ display:none; }
+    .topbar{
+      display:flex; position:sticky; top:0; z-index:40;
+      background:var(--paper); border-bottom:1px solid var(--line);
+      padding:1rem 5vw; align-items:center; justify-content:space-between; gap:1rem;
+    }
+    .topbar .rail-mark{ margin:0; font-size:1.2rem; }
+    .topnav{ display:flex; gap:1.1rem; overflow-x:auto; font-family:var(--mono); font-size:.7rem; letter-spacing:.05em; }
+    .topnav a{ white-space:nowrap; text-decoration:none; color:var(--ink-soft); padding-bottom:2px; border-bottom:1px solid transparent; }
+    .topnav a.active{ color:var(--brass-deep); border-color:var(--brass); }
+    main{ margin-left:0; }
+    section{ padding:3.4rem 6vw 1rem; }
+    .life-grid{ grid-template-columns:1fr; }
+    .coll-grid{ grid-template-columns:1fr 1fr; }
+    .now-grid{ grid-template-columns:1fr; }
+    .hero-top{ gap:1.4rem; }
+    .portrait{ width:130px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="rail-mark">tanishqa.</span>
+  <nav class="topnav" id="topnav"></nav>
+</div>
+
+<div class="shell">
+  <aside class="rail">
+    <div>
+      <div class="rail-mark">tanishqa.</div>
+      <div class="rail-sub">notes to self</div>
+    </div>
+    <ul class="rail-list" id="railList"></ul>
+    <div class="rail-foot">
+      <span class="tag">Elsewhere</span>
+      <div class="rail-socials">
+        <a href="https://instagram.com/tanishqa79" target="_blank" rel="noopener">Instagram — @tanishqa79</a>
+        <a href="#" target="_blank" rel="noopener">Spotify (add link)</a>
+        <a href="mailto:tanishqagandhi.business@gmail.com">Email</a>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- ABOUT -->
+    <section id="about" data-title="About" data-time="always open">
+      <div class="section-inner hero">
+        <div class="hero-top">
+          <div class="portrait"></div>
+          <div class="hero-stage">
+            <div class="hero-q" id="heroQ"></div>
+          </div>
+        </div>
+        <h1 class="hero-a" id="heroA">Hi, I'm Tanishqa.</h1>
+
+        <div class="hero-body">
+          <p>I've never really known how to answer the question, "What do you do?" Every time I think I've found one answer, life hands me another.</p>
+
+          <p>I grew up watching my family's jewellery business up close, long before I knew words like branding or strategy. What I noticed instead was simpler — why a customer kept coming back, what made someone trust a shopkeeper they'd known for twenty years. I didn't know it then, but that's probably where my curiosity about people, and about businesses, actually started.</p>
+
+          <p>I studied International Business because I wanted to understand how ideas travel across borders. But college became so much more than lectures and exams — it became a place to try on different versions of myself. A semester spent helping build a race car with a Formula Student team. A year spent as CSR Head, mostly learning that leadership is quieter than it looks, and happens long before anyone's clapping.</p>
+
+          <p>I kept saying yes to things that felt just outside my comfort zone — volunteering, anchoring, organising, competing — mostly because I was curious what would happen if I did.</p>
+
+          <blockquote>Swimming taught me discipline. Events taught me people. Business taught me systems. Community taught me empathy.</blockquote>
+
+          <p>These days I work as a property consultant in Pune, and alongside that, I keep a hand in my family's jewellery business while building consumer brands through ProspAura, including ONYU. But if you ask me what I do, none of those titles feel like the whole answer. Curiosity feels closer to the truth.</p>
+
+          <p>Lately I've been falling down rabbit holes about physics and philosophy — not because I understand most of it, but because the questions underneath (why does time feel the way it does, why does anything exist at all) refuse to leave me alone. It's the same itch that pulls me into consumer psychology, or has me noticing why one building makes you want to linger and another makes you want to leave.</p>
+
+          <p>I'm the type of person who'll spend one evening reading about behavioural psychology and the next learning to cook something I've never attempted. I'll cross a city because someone mentioned a café. Stand beneath the Acropolis wondering how an idea outlives the person who had it. I don't think I'm Type A, and I don't think I'm Type B — I'm ambitious without wanting my whole life to revolve around work, and I care more about people and ideas than I do about most things with my name on them.</p>
+
+          <p>I bake — well, cook, mostly — when I'm happy. I journal when I'm confused. I travel whenever I can, and somewhere along the way I've learned that the best education rarely comes from a classroom. It comes from conversations, train stations, wrong turns, unexpected friendships.</p>
+
+          <p>I've learned to enjoy my own company. I've become the person I can rely on most. And I hope I never stop becoming.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- UPBRINGING -->
+    <section id="upbringing" data-title="Upbringing" data-time="where it started">
+      <div class="section-inner">
+        <span class="tag">Before all of this</span>
+        <h2 class="section-title">Business wasn't something I studied before I lived it.</h2>
+        <p>I grew up in an entrepreneurial family, and long before I understood terms like margin or brand positioning, I understood people — who a shopkeeper trusted, why a customer came back, what made someone feel taken care of. Business, to me, was a thing that happened over dinner conversations, not something in a textbook.</p>
+        <p>Nobody in my house believed in one fixed path. I was encouraged to explore — a new hobby, a new city, a new interest — without needing much of a reason beyond wanting to. And somewhere along the way, I was trusted with real responsibility earlier than I probably expected: decisions, money, figuring things out without someone hovering nearby.</p>
+        <p>I think that's genuinely where my independence comes from — not one dramatic moment, but a hundred small ones. My parents quietly stepping back so I could step forward.</p>
+        <p class="soft">It's probably why trying something unfamiliar has never scared me quite as much as it maybe should.</p>
+      </div>
+    </section>
+
+    <!-- LIFE -->
+    <section id="life" data-title="Life" data-time="ongoing">
+      <div class="section-inner wide">
+        <span class="tag">Outside work</span>
+        <h2 class="section-title">This page is everything <em>outside</em> work.</h2>
+        <p class="soft" style="max-width:var(--measure)">Swimming. Backpacking. Books. Cooking. Music. Photography. Design. Coffee. Long drives. Trying new restaurants. Collecting playlists. Watching sunsets. Meditation. Journaling. Pranic healing (currently curious about it, more on that below). Philosophy. Psychology. Architecture. Art. Travelling without overplanning. Late-night conversations. Early morning silence. Learning random things simply because they're interesting.</p>
+        <p class="soft" style="max-width:var(--measure)">This page should feel like spending a Saturday with me.</p>
+
+        <div class="life-grid">
+          <div class="life-item curiosity">
+            <h3>Curiosity</h3>
+            <p>Ask me about physics, human behaviour, why a certain café feels good to sit in, or why some cities feel alive and others don't — I'll happily lose an hour to it. Consumer psychology, branding, architecture, design, cities, businesses, and the strange overlap between physics and philosophy are all, somehow, the same question to me: why do things — and people, and places — work the way they do. I don't think I collect answers so much as I collect better questions.</p>
+          </div>
+
+          <div class="life-item">
+            <h3>Reading</h3>
+            <p>Reading is one of my favourite forms of solitude. Left alone with a book, I'm genuinely happy. Most of my shelf is philosophy, psychology, behavioural science, business, and biographies — books that quietly rearrange how I think about something. But I have guilty pleasures too: fiction, comfort reads, and the occasional novel I finish in one sitting because I refuse to put it down. How I actually fell in love with reading is a story for another day.</p>
+          </div>
+          <div class="life-item">
+            <h3>Cooking</h3>
+            <p>I genuinely love cooking — my friends are always a little surprised by how much. I like experimenting with cuisines and techniques I've never tried, understanding why a dish works rather than just following the steps. Taking a pasta class from a Michelin-starred Italian chef is a pretty good example of how I like to learn things: hands in the dough, not from a book.</p>
+          </div>
+          <div class="life-item">
+            <h3>Travelling</h3>
+            <p>I've backpacked through northern and southern India and realised that travelling isn't about collecting destinations — it's about collecting perspectives. Every city teaches me something different, whether it's resilience, patience, culture, food, or simply slowing down long enough to notice life. (More on this on the Travels page.)</p>
+          </div>
+          <div class="life-item">
+            <h3>Swimming</h3>
+            <p>Swimming has been one of the longest relationships in my life. It taught me consistency before motivation, discipline before results, and that progress usually happens quietly.</p>
+          </div>
+          <div class="life-item">
+            <h3>Dancing</h3>
+            <p>Some nights are meant for music, crowded dance floors, and laughing until 2 a.m. I love celebrating life just as much as I love reflecting on it — usually within twelve hours of each other.</p>
+          </div>
+          <div class="life-item">
+            <h3>Solitude</h3>
+            <p>I genuinely love my own company. I don't need constant stimulation, or people around me, to feel like a day was well spent. Some of my happiest days are just reading, writing, cooking, walking, or listening to music with absolutely no agenda. Solitude is where I recharge — and honestly, where most of my ideas begin, long before they're ever said out loud.</p>
+          </div>
+          <div class="life-item">
+            <h3>People</h3>
+            <p>I genuinely love meeting people. Not because of networking, but because every conversation teaches me something I couldn't have learned alone.</p>
+          </div>
+          <div class="life-item">
+            <h3>Philosophy</h3>
+            <p>I'm fascinated by questions people have been asking for centuries — meaning, purpose, identity — and lately, the strange overlap between physics and philosophy. What does it actually mean that time might not move the way we experience it? I find myself happily stuck somewhere between the two.</p>
+          </div>
+          <div class="life-item">
+            <h3>Design</h3>
+            <p>I notice fonts, interiors, packaging, the way a lobby makes you feel the second you walk in. Branding, consumer psychology, architecture — different names, I think, for the same question I can't stop asking: why do certain things, and places, make us feel a certain way?</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GIVING BACK -->
+    <section id="giving-back" data-title="Giving Back" data-time="since 15">
+      <div class="section-inner">
+        <span class="tag">Community</span>
+        <h2 class="section-title">Community has shaped me since I was <em>fifteen</em>.</h2>
+        <p>LMAD became one of the biggest influences in my life. Over the years I've volunteered, organised conferences, facilitated youth discussions, mentored younger students, coordinated teams, planned events, managed logistics, and learned that service doesn't always have to be loud.</p>
+        <p>During university I continued that through student leadership — CSR Head, large-scale campus events, anchoring, volunteer initiatives. Mostly, I was just trying to bring people together and create spaces where they felt seen.</p>
+        <blockquote>Impact isn't always measured by numbers. Sometimes it's measured by one conversation.</blockquote>
+        <p>One opportunity. One person who leaves believing a little more in themselves.</p>
+      </div>
+    </section>
+
+    <!-- WORK -->
+    <section id="work" data-title="Work" data-time="present">
+      <div class="section-inner wide">
+        <span class="tag">What pays the bills, and what doesn't</span>
+        <h2 class="section-title">Work, in a few forms.</h2>
+
+        <div class="entry">
+          <h3>Property Consultant</h3>
+          <span class="entry-org">Amoya Consulting</span>
+          <p>Most days I'm helping someone in Pune make one of the biggest financial and emotional decisions of their life — buying a home. It's taught me more about negotiation, trust, and human psychology than I expected a real estate job to.</p>
+        </div>
+
+        <div class="entry">
+          <h3>Family Business</h3>
+          <span class="entry-org">Jewellery</span>
+          <p>Growing up inside a family business gave me an appreciation for craftsmanship, legacy, and trust that took time to build — the kind that shapes how I think about entrepreneurship even now.</p>
+        </div>
+
+        <div class="entry">
+          <h3>Building</h3>
+          <span class="entry-org">ProspAura · ONYU</span>
+          <p>I spend a chunk of my time building consumer products under ProspAura, including ONYU — the part of business I find most interesting: understanding people well enough to build something they actually want, then figuring out how to say that clearly through a brand.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDUCATION -->
+    <section id="education" data-title="Education" data-time="the classroom, sort of">
+      <div class="section-inner">
+        <span class="tag">Formal, and not</span>
+        <h2 class="section-title">Bachelor of Business Administration</h2>
+        <p><em>International Business</em> — MIT College of Management, Pune</p>
+        <p>But education didn't really stop in classrooms. College taught me leadership, public speaking, how to organise something from nothing, and how saying yes to things outside your comfort zone is usually where the good stuff happens.</p>
+      </div>
+    </section>
+
+    <!-- TRAVELS -->
+    <section id="travels" data-title="Travels" data-time="ongoing">
+      <div class="section-inner">
+        <span class="tag">Perspective, mostly</span>
+        <h2 class="section-title">I don't travel to collect <em>countries</em>.</h2>
+        <p>I've been travelling on my own, in some form, since before I really understood what independence meant.</p>
+        <p>Since around third grade, my parents started sending me to summer and winter camps without them — on purpose. They wanted me comfortable being somewhere unfamiliar, meeting people I didn't know, figuring things out without someone to run to. At the time it just felt like camp. Looking back, I think it's the whole reason solo travel has always felt natural to me instead of intimidating.</p>
+        <p>That early practice at being okay in unfamiliar places turned into an actual curiosity about them — different cultures, different people, the small things a place teaches you that no guidebook can.</p>
+        <p>I travel to collect perspectives, not destinations.</p>
+        <p>Athens taught me that ideas can outlive generations. Italy reminded me that craftsmanship deserves patience. Northern India taught me resilience. Southern India taught me slowness.</p>
+        <p>Every journey has left me thinking a little differently than the one before it.</p>
+      </div>
+    </section>
+
+    <!-- THINKING OUT LOUD -->
+    <section id="thinking" data-title="Thinking Out Loud" data-time="just started">
+      <div class="section-inner">
+        <span class="tag">From my notes app</span>
+        <h2 class="section-title">Nothing polished. Just <em>honest</em>.</h2>
+        <p>A growing collection of thoughts from my actual Notes app. Small observations. Questions. Ideas. Things I don't have answers to.</p>
+
+        <div class="thoughts-list" id="thoughtsList">
+
+          <!--
+            HOW TO ADD A NEW THOUGHT
+            ------------------------
+            Copy the block below (from <div class="thought"> to </div>),
+            paste it just under the opening <div class="thoughts-list ...">
+            tag above (newest on top), then edit the date, title, and text.
+            Delete the placeholder entry once you've written your first real one.
+
+            <div class="thought">
+              <span class="thought-date">Month Day, Year</span>
+              <h3>Title of the thought</h3>
+              <p>The actual thought, written however it came to you. Doesn't
+              need to be polished or even finished.</p>
+            </div>
+          -->
+
+          <div class="thought placeholder">
+            <span class="thought-date">— sample entry, delete me —</span>
+            <h3>This is what a thought looks like here</h3>
+            <p>Write it the way it actually came to you — half a page or two lines, doesn't matter. Nothing here needs to be finished before it's worth writing down. Open this file, find this block, and replace it with your first real one.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- COLLECTIONS -->
+    <section id="collections" data-title="Collections" data-time="curated">
+      <div class="section-inner wide">
+        <span class="tag">Small archives</span>
+        <h2 class="section-title">Things worth keeping.</h2>
+        <div class="coll-grid">
+          <div class="coll-card"><h4>Books</h4><span>that changed how I think</span></div>
+          <div class="coll-card"><h4>Cafés</h4><span>favourites, ranked loosely</span></div>
+          <div class="coll-card"><h4>Playlists</h4><span>for every mood</span></div>
+          <div class="coll-card"><h4>Recipes</h4><span>from scratch</span></div>
+          <div class="coll-card"><h4>Photographs</h4><span>unposed, mostly</span></div>
+          <div class="coll-card"><h4>Quotes</h4><span>that stayed with me</span></div>
+          <div class="coll-card"><h4>Restaurants</h4><span>worth revisiting</span></div>
+          <div class="coll-card"><h4>Design inspiration</h4><span>fonts, spaces, objects</span></div>
+          <div class="coll-card"><h4>Obsessions</h4><span>current, fleeting</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE LONG GAME -->
+    <section id="long-game" data-title="The Long Game" data-time="in progress">
+      <div class="section-inner">
+        <span class="tag">Where this is all going</span>
+        <h2 class="section-title">I don't want <em>one</em> career.</h2>
+        <p>I don't want one company. I don't even want one definition.</p>
+        <p>I hope to spend my life building across different worlds. Businesses that solve meaningful problems. Communities that help people grow. Places where creativity feels safe. Products that improve everyday life. Spaces that bring strangers together. Ideas that make someone pause and think.</p>
+        <p>I want to invest in people. Mentor. Learn. Travel. Create. Keep changing my mind. Keep beginning again.</p>
+        <blockquote>I hope that decades from now people won't remember me for one company. I hope they'll remember that I built things worth caring about.</blockquote>
+      </div>
+    </section>
+
+    <!-- NOW -->
+    <section id="now" data-title="Now" data-time="today">
+      <div class="section-inner wide">
+        <span class="tag">A snapshot</span>
+        <h2 class="section-title">Right now.</h2>
+        <div class="now-grid">
+          <div class="now-item">
+            <span class="tag">Currently reading</span>
+            <p class="fill">— fill this in</p>
+          </div>
+          <div class="now-item">
+            <span class="tag">Currently listening</span>
+            <p class="fill">— fill this in</p>
+          </div>
+          <div class="now-item">
+            <span class="tag">Currently building</span>
+            <ul><li>Real estate</li><li>ProspAura</li><li>ONYU</li><li>Myself</li></ul>
+          </div>
+          <div class="now-item">
+            <span class="tag">Currently learning</span>
+            <ul><li>Pranic healing</li><li>Consumer psychology</li><li>Brand storytelling</li></ul>
+          </div>
+          <div class="now-item" style="grid-column:1/-1;">
+            <span class="tag">Currently dreaming about</span>
+            <ul><li>Living in another country for a while</li><li>Learning another language</li><li>Owning a beautiful home full of books and conversations</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAY HI -->
+    <section id="say-hi" data-title="Say Hi" data-time="always">
+      <div class="section-inner wide sayhi">
+        <span class="tag">Before you go</span>
+        <p class="lede">If you've made it this far... we're basically internet friends now.</p>
+        <p>I'm really glad you're here. I built this little corner of the internet hoping it would feel less like a portfolio and more like a conversation. I'd genuinely love to hear from you — what resonated, what didn't, or just hello.</p>
+
+        <div class="social-row">
+          <a href="https://instagram.com/tanishqa79" target="_blank" rel="noopener">Instagram — @tanishqa79</a>
+          <a href="mailto:tanishqagandhi.business@gmail.com">tanishqagandhi.business@gmail.com</a>
+          <span class="fill">Spotify — link coming soon</span>
+        </div>
+
+        <form class="msg-note" id="msgForm">
+          <label for="msgName">Your name (optional)</label>
+          <input type="text" id="msgName" placeholder="Whoever you are">
+          <label for="msgBody">Say hello, or whatever's on your mind</label>
+          <textarea id="msgBody" required placeholder="..."></textarea>
+          <button type="submit">Send</button>
+          <p class="msg-hint">This opens your email app with a message addressed to me — nothing sends automatically.</p>
+        </form>
+
+        <p style="margin-top:2.4rem;">See you there. 🤍</p>
+      </div>
+    </section>
+
+    <footer class="foot">tanishqa. — a notes app, more or less. built with care.</footer>
+  </main>
+</div>
+
+<script>
+  const sections = Array.from(document.querySelectorAll('main section'));
+  const railList = document.getElementById('railList');
+  const topnav = document.getElementById('topnav');
+
+  sections.forEach(sec => {
+    const title = sec.dataset.title;
+    const time = sec.dataset.time;
+    const id = sec.id;
+
+    const li = document.createElement('li');
+    li.innerHTML = `<a class="rail-link" href="#${id}" data-target="${id}">
+        <span class="n-title">${title}</span>
+        <span class="n-time">${time}</span>
+      </a>`;
+    railList.appendChild(li);
+
+    const tlink = document.createElement('a');
+    tlink.href = `#${id}`;
+    tlink.dataset.target = id;
+    tlink.textContent = title;
+    topnav.appendChild(tlink);
+  });
+
+  const railLinks = document.querySelectorAll('.rail-link');
+  const topLinks = document.querySelectorAll('.topnav a');
+
+  const setActive = (id) => {
+    railLinks.forEach(a => a.classList.toggle('active', a.dataset.target === id));
+    topLinks.forEach(a => a.classList.toggle('active', a.dataset.target === id));
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) setActive(entry.target.id);
+    });
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+
+  sections.forEach(sec => observer.observe(sec));
+  if (sections.length) setActive(sections[0].id);
+
+  // Hero typewriter
+  const heroQ = document.getElementById('heroQ');
+  const heroA = document.getElementById('heroA');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduced) {
+    heroQ.textContent = '';
+    heroA.classList.add('show');
+  } else {
+    const phrase = 'What do you do?';
+    let i = 0;
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+
+    function type() {
+      if (i <= phrase.length) {
+        heroQ.textContent = phrase.slice(0, i);
+        heroQ.appendChild(cursor);
+        i++;
+        setTimeout(type, 55);
+      } else {
+        setTimeout(() => {
+          heroQ.style.transition = 'opacity .6s ease';
+          heroQ.style.opacity = '0';
+          setTimeout(() => { heroA.classList.add('show'); }, 300);
+        }, 700);
+      }
+    }
+    setTimeout(type, 400);
+  }
+
+  // Message note -> mailto
+  const msgForm = document.getElementById('msgForm');
+  msgForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('msgName').value.trim();
+    const body = document.getElementById('msgBody').value.trim();
+    const subject = 'Hey Tanishqa — from your website';
+    const fullBody = (name ? `From: ${name}\n\n` : '') + body;
+    window.location.href = `mailto:tanishqagandhi.business@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullBody)}`;
+  });
+</script>
+
+</body>
+</html>
